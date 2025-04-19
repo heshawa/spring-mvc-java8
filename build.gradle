@@ -1,6 +1,6 @@
 plugins {
-    id 'java'
-    id 'application'
+    id 'org.gretty' version '3.0.5'
+    id 'war'
 }
 
 group = 'org.example'
@@ -19,6 +19,8 @@ test {
     useJUnitPlatform()
 }
 
-application {
-    mainClassName = 'org.example.Main'
+
+gretty {
+    contextPath = '/'
+    servletContainer = 'tomcat9'  // or 'tomcat10'
 }
