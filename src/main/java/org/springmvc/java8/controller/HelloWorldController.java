@@ -1,16 +1,22 @@
 package org.springmvc.java8.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/hello")
 public class HelloWorldController {
 	
-	@GetMapping("/hello")
+	@GetMapping("")
 	public Message hello() {
 		return new Message("Hello", "World");
+	}
+	
+	@GetMapping("/{title}/{body}")
+	public Message helloWithParams(@PathVariable String title,@PathVariable String body) {
+		return new Message(title, body);
 	}
 	class Message {
 		private String title;
