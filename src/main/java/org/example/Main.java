@@ -15,5 +15,9 @@ public class Main {
 			// for you, but you can always add more by pressing Ctrl+F8.
 			System.out.println("i = " + i);
 		}
+		
+//		CallApiService callApiService = new CallApiService();
+		System.out.println("Heshawa1 : " + CallApiService.getProductNameForId(7));
+		System.out.println("Heshawa2 : " + CallApiService.getProductDetailForId(7).toString());
 	}
 }
