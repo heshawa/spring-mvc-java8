@@ -13,6 +13,7 @@ repositories {
 dependencies {
     implementation 'org.springframework:spring-webmvc:5.3.33'
     implementation 'javax.servlet:jstl:1.2'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.4'
     providedCompile 'javax.servlet:javax.servlet-api:4.0.1'
     
     testImplementation platform('org.junit:junit-bom:5.9.1')
