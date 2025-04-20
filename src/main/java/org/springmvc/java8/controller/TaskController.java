@@ -1,6 +1,8 @@
 package org.springmvc.java8.controller;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
@@ -14,6 +16,7 @@ import org.springmvc.java8.model.Task;
 @ResponseBody
 public class TaskController {
 	
+	private static final Logger logger = LoggerFactory.getLogger(TaskController.class);
 	@Autowired
 	private TaskRepository repository;
 
@@ -29,13 +32,20 @@ public class TaskController {
 		try{
 			Task saveTask = new Task(task.getTitle());
 			saveTask.setDescription(task.getDescription());
-			saveTask.setTaskStatus(TaskStatus.valueOf(task.getStatus()));
+			
+			if(task.getStatus() != null){
+				saveTask.setTaskStatus(TaskStatus.valueOf(task.getStatus()));
+			}else {
+				logger.warn("Task status is null, defaulting to CREATED");
+			}
 			Task taskToSave = repository.save(saveTask);
+			logger.info("Task saved with id: " + taskToSave.getId());
+			
 			res.setBody(taskToSave.getId().toString());
 			res.setMessage("Task saved successfully");
 		} catch(Exception e){
 			//TODO Log exception
-			
+			logger.error("Error while saving task", e);
 			res.setMessage("Unexpected error occured");
 			res.setStatus(500);
 			return this.getResponse(res,HttpStatus.INTERNAL_SERVER_ERROR);
