@@ -24,7 +24,7 @@ public class TaskController {
 	public ResponseEntity createTask(@RequestBody TaskDto task){
 		Response res = new Response();
 		if(task == null){
-			res.setMessage("Input caanot be null");
+			res.setMessage("Input cannot be null");
 			res.setSuccess(false);
 			return this.getResponse(res,HttpStatus.OK);
 		}
@@ -56,17 +56,22 @@ public class TaskController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity readTask(@PathVariable Long id){
-		Response res = new Response();
 		try{
 			Task task = repository.findById(id).get();
 			if(task == null){
 				return this.getResponse(task,HttpStatus.NO_CONTENT);
 			}else{
-				return this.getResponse(task,HttpStatus.OK);
+				TaskDto taskDto = new TaskDto();
+				taskDto.setId(task.getId().toString());
+				taskDto.setTitle(task.getTitle());
+				taskDto.setDescription(task.getDescription());
+				taskDto.setStatus(task.getStatus().name());
+				return this.getResponse(taskDto,HttpStatus.OK);
 			}
 		} catch(Exception e){
-			//TODO Log exception
-			res.setMessage("Unexpected error occured");
+			logger.error("Error while fetching task", e);
+			Response res = new Response();
+			res.setMessage("Unexpected error occurred");
 			res.setStatus(500);
 			return this.getResponse(res,HttpStatus.INTERNAL_SERVER_ERROR);
 
@@ -77,6 +82,7 @@ public class TaskController {
 	public ResponseEntity updateTask(@PathVariable Long id, @RequestBody TaskDto task){
 		Response res = new Response();
 		if(task == null){
+			logger.error("Input task is null");
 			res.setMessage("Input caanot be null");
 			res.setSuccess(false);
 			return this.getResponse(res,HttpStatus.OK);
@@ -85,6 +91,7 @@ public class TaskController {
 		try{
 			Task taskToUpdate = repository.findById(id).get();
 			if(taskToUpdate == null){
+				logger.error("Task not found with id: " + id);
 				res.setMessage("Task not found");
 				res.setSuccess(false);
 				return this.getResponse(res,HttpStatus.NO_CONTENT);
@@ -92,7 +99,11 @@ public class TaskController {
 
 			taskToUpdate.setTitle(task.getTitle());
 			taskToUpdate.setDescription(task.getDescription());
-			taskToUpdate.setTaskStatus(TaskStatus.valueOf(task.getStatus()));
+			if(task.getStatus() != null){
+				taskToUpdate.setTaskStatus(TaskStatus.valueOf(task.getStatus()));
+			}else {
+				logger.warn("Task status is null, defaulting to CREATED");
+			}			
 			repository.save(taskToUpdate);
 			res.setBody(task.getId());
 			res.setMessage("Task updated successfully");

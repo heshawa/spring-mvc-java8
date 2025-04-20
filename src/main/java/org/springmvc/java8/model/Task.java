@@ -38,4 +38,15 @@ public class Task {
 		return id;
 	}
 
+	public String getTitle() {
+		return title;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public TaskStatus getStatus() {
+		return status;
+	}
 }
