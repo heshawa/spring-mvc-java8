@@ -1,6 +1,8 @@
 package org.springmvc.java8.controller;
 
 
+import java.util.NoSuchElementException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +61,7 @@ public class TaskController {
 		try{
 			Task task = repository.findById(id).get();
 			if(task == null){
-				return this.getResponse(task,HttpStatus.NO_CONTENT);
+				return this.getResponse(null,HttpStatus.NO_CONTENT);
 			}else{
 				TaskDto taskDto = new TaskDto();
 				taskDto.setId(task.getId().toString());
@@ -81,20 +83,11 @@ public class TaskController {
 	@PutMapping("/{id}")
 	public ResponseEntity updateTask(@PathVariable Long id, @RequestBody TaskDto task){
 		Response res = new Response();
-		if(task == null){
-			logger.error("Input task is null");
-			res.setMessage("Input caanot be null");
-			res.setSuccess(false);
-			return this.getResponse(res,HttpStatus.OK);
-		}
-
 		try{
 			Task taskToUpdate = repository.findById(id).get();
 			if(taskToUpdate == null){
 				logger.error("Task not found with id: " + id);
-				res.setMessage("Task not found");
-				res.setSuccess(false);
-				return this.getResponse(res,HttpStatus.NO_CONTENT);
+				return this.getResponse(null,HttpStatus.NO_CONTENT);
 			}
 
 			taskToUpdate.setTitle(task.getTitle());
@@ -105,12 +98,40 @@ public class TaskController {
 				logger.warn("Task status is null, defaulting to CREATED");
 			}			
 			repository.save(taskToUpdate);
+			logger.info("Task updated with id: " + taskToUpdate.getId());
 			res.setBody(task.getId());
 			res.setMessage("Task updated successfully");
 		} catch(Exception e){
-			//TODO Log exception
+			logger.error("Error while updating task", e);
 			res.setMessage("Unexpected error occured");
 			res.setStatus(500);
+		}
+		return this.getResponse(res,HttpStatus.OK);
+	}
+	
+	@DeleteMapping("/{id}")
+	public ResponseEntity deleteTask(@PathVariable Long id){
+		Response res = new Response();
+		try{
+			Task taskToDelete = repository.findById(id).get();
+			repository.delete(taskToDelete);
+			logger.info("Task deleted with id: " + taskToDelete.getId());
+			res.setBody(taskToDelete.getId().toString());
+			res.setMessage("Task deleted successfully");
+		} catch (NoSuchElementException e){
+			logger.error("Task not found with id: " + id);
+//			res.setMessage("Task not found");
+//			res.setSuccess(false);
+//			res.setStatus(HttpStatus.NO_CONTENT.value());
+//			return this.getResponse(res,HttpStatus.OK);
+			
+			//NO_CONTENT is not sending a body
+			return this.getResponse(null,HttpStatus.NO_CONTENT);
+		} catch(Exception e){
+			logger.error("Error while deleting task", e);
+			res.setMessage("Unexpected error occurred");
+			res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return this.getResponse(res,HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return this.getResponse(res,HttpStatus.OK);
 	}
@@ -120,125 +141,3 @@ public class TaskController {
 		return new ResponseEntity<>(t, status);
 	}
 }
-
-//
-//class TaskDto {
-//	private String id;
-//	private String title;
-//	private String description;
-//	private String status;
-//
-//	TaskDto(String id, String title, String description, String status) {
-//		this.id = id;
-//		this.title = title;
-//		this.description = description;
-//		this.status = status;
-//	}
-//
-//	TaskDto() {}
-//
-//	public String getId() {
-//		return id;
-//	}
-//
-//	public String getTitle() {
-//		return title;
-//	}
-//
-//	public String getDescription() {
-//		return description;
-//	}
-//
-//	public String getStatus() {
-//		return status;
-//	}
-//}
-//
-//enum TaskStatus {
-//	CREATED, APPROVED, REJECTED, BLOCKED, DONE
-//}
-//
-//@Entity
-//class Task {
-//	@Id
-//	@GeneratedValue
-//	private Long id;
-//
-//	private String title;
-//	private String description;
-//	private TaskStatus status = CREATED;
-//
-//	public Task(String title) {
-//		this.title = title;
-//	}
-//
-//	private Task() {}
-//
-//	public void setTitle(String title) {
-//		this.title = title;
-//	}
-//
-//	public void setDescription(String description) {
-//		this.description = description;
-//	}
-//
-//	public void setTaskStatus(TaskStatus status) {
-//		this.status = status;
-//	}
-//
-//	public Long getId() {
-//		return id;
-//	}
-//
-//	public TaskDto toDto() {
-//		return new TaskDto(String.valueOf(id), title, description, status.name());
-//	}
-//}
-//
-//
-//class Response{
-//	private int status;
-//	private boolean success;
-//	private String message;
-//	private int body;
-//
-//	public Response() {
-//		this.status = 200;
-//		this.success = true;
-//		this.message = "";
-//		this.body = 0;
-//	}
-//
-//	public int getStatus() {
-//		return status;
-//	}
-//
-//	public void setStatus(int status) {
-//		this.status = status;
-//	}
-//
-//	public boolean isSuccess() {
-//		return success;
-//	}
-//
-//	public void setSuccess(boolean success) {
-//		this.success = success;
-//	}
-//
-//	public String getMessage() {
-//		return message;
-//	}
-//
-//	public void setMessage(String message) {
-//		this.message = message;
-//	}
-//
-//	public int getBody() {
-//		return body;
-//	}
-//
-//	public void setBody(int body) {
-//		this.body = body;
-//	}
-//
-//}
